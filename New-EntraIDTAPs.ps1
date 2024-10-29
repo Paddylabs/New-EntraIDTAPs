@@ -13,6 +13,7 @@ None
 
 .INPUTS
 A csv file with 'Name', 'Username' and 'Email' columns
+A config.ps1 file with the following variables: $ClientId, $TenantId, $thumbprint
 
 .OUTPUTS
 A logfile
@@ -56,6 +57,7 @@ function Import-ValidCSV {
     $csvImport = Import-Csv -LiteralPath $inputFile
     $requiredColumns | ForEach-Object {
         if ($_ -notin $csvImport[0].psobject.properties.name) {
+            WriteLog "CSV file is missing the $_ column"
             throw "$inputFile is missing the $_ column"
         }
     }
@@ -68,6 +70,21 @@ function WriteLog {
         $Stamp      = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
         $LogMessage = "$Stamp $LogString"
         Add-Content $LogFile -Value $LogMessage
+}
+function Test-DateTime {
+    param ($DateTimeString)
+    try {
+        $DateTime = [datetime]::ParseExact($DateTimeString, "yyyy-MM-ddTHH:mm:ss.fffZ", $null)
+        if ($DateTime -lt (Get-Date)) {
+            Write-Host "The selected date and time are in the past." -ForegroundColor Red 
+            return $false
+        }
+        return $true
+    }
+    catch {
+        Write-Host "Invalid date/time format. Please enter a valid date and time." -ForegroundColor Red 
+        return $false
+    }
 }
 function New-EntraIDTAP {
     param (
@@ -110,10 +127,10 @@ function New-EntraIDTAP {
         Write-Progress -Id 1 -Activity "Creating $($Userdata.Count) TAPs" -Status "$PercentComplete% Complete"  -PercentComplete $PercentComplete
         }
         $Counter++
-        Start-Sleep -Seconds 2
         $UserId = (Get-MgUser -Filter "userPrincipalName eq '$($User.username)'" | Select-Object -Property Id).Id
         if ($null -eq $UserId) {
-            Write-Host "User $($User.username) not found in Entra ID."
+            WriteLog "User $($User.username) not found in Entra."
+            Write-Host "User $($User.username) not found in Entra."
             continue
         }
         $params = @{
@@ -128,10 +145,13 @@ function New-EntraIDTAP {
         Write-Host "Failed to create TAP for $($User.username)."
         WriteLog "Failed to create TAP for $($User.username)"
         continue
-}
+        } 
+        
 
-        If ($null -ne $Tap) {
 
+elseif ($null -ne $Tap) {
+            Write-Host "TAP created for $($User.username)."
+            WriteLog "TAP created for $($User.username)."
             # Format the start date and time
             $day = $tap.StartDateTime.Day
             $month = $tap.StartDateTime.ToString("MMMM")
@@ -238,38 +258,11 @@ function New-EntraIDTAP {
             Send-MGUserMail -UserId $SenderId -Message $emailParams -saveToSentItems:$false
         }
         else {
+            WriteLog "Failed to create TAP for $($User.username)."
             Write-Host "Failed to create TAP for $($User.username)."
         }
     }
-
 }
-function Test-DateTime {
-    param ($DateTimeString)
-    try {
-        $DateTime = [datetime]::ParseExact($DateTimeString, "yyyy-MM-ddTHH:mm:ss.fffZ", $null)
-        if ($DateTime -lt (Get-Date)) {
-            Write-Host "The selected date and time are in the past." -ForegroundColor Red 
-            return $false
-        }
-        return $true
-    }
-    catch {
-        Write-Host "Invalid date/time format. Please enter a valid date and time." -ForegroundColor Red 
-        return $false
-    }
-}
-
-# Import configuration file
-# Check for configuration file
-$configPath = "$PSScriptRoot\config.ps1"
-
-if (Test-Path $configPath) {
-    . $configPath  # Load configuration file
-} else {
-    Write-Host "Configuration file not found at $configPath. Please ensure it exists." -ForegroundColor Red
-    exit 1
-}
-
 
 # Start of script
 # Try to create a log file and exit if it fails.
@@ -282,6 +275,31 @@ try {
 catch {
     Write-Host "Error creating or opening the log file: $_"
     exit
+}
+# Check for configuration file
+$configPath = "$PSScriptRoot\config.ps1"
+if (Test-Path $configPath) {
+    . $configPath  # Load configuration file
+} else {
+    WriteLog "Configuration file not found at $configPath. Please ensure it exists."
+    Write-Host "Configuration file not found at $configPath. Please ensure it exists." -ForegroundColor Red
+    exit 1
+}
+$requiredModules = @("Microsoft.Graph.Users", "Microsoft.Graph.Authentication", "Microsoft.Graph.Mail", "Microsoft.Graph.Identity.SignIns", "Microsoft.PowerShell.ConsoleGuiTools","Microsoft.Graph.Users.Actions")
+foreach ($module in $requiredModules) {
+    if (!(Get-Module -ListAvailable -Name $module)) {
+        try {
+            Write-Host "Installing module $module..." -ForegroundColor Cyan
+            Install-PSResource -Name $module -Scope CurrentUser -Force -ErrorAction Stop
+        }
+        catch {
+            Write-Host "Failed to install module $module. Please check your permissions or network connection." -ForegroundColor Red
+            exit
+        }
+    }
+    else {
+        Write-Host "Installing modules... Module $module is already installed." -ForegroundColor Green
+    }
 }
 # Try to import the CSV file and exit if it fails.
 Try {
@@ -296,21 +314,9 @@ Catch {
     WriteLog "CSV was not selected or did not have the required column name"
     exit
 }       
-# If its not already installed try to install required modules and exit if it fails.
-if (!(Get-Module -ListAvailable -Name Microsoft.PowerShell.ConsoleGuiTools)) {
-    try {
-        Install-Module Microsoft.PowerShell.ConsoleGuiTools -Scope CurrentUser -Force -ErrorAction Stop
-    }
-    catch {
-        Write-Host "The required modules could not be installed" -ForegroundColor Yellow
-        WriteLog "The required modules could not be installed"
-        exit
-    }
-}
 # Try to connect to Graph and exit if it fails.
 try {
     Connect-MgGraph -clientid $ClientId -tenantid $TenantId -certificatethumbprint $thumbprint -ErrorAction Stop
-    
 }
 catch {
     Write-Host "Could not connect to Graph" -ForegroundColor Yellow
