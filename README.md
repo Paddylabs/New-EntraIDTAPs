@@ -8,7 +8,7 @@ This script allows you to select a start date / time and duration for the TAPs a
 
 ## Prerequisites
 
-- **An Entra ID App registration with the following Graph API permissions (protected by Certificate Authentication)
+- **An Entra ID App**: The script requires an app registration with the following Graph API permissions (protected by Certificate Authentication)
   - `UserAuthenticationMethod.ReadWrite.All`
   - `User.Read.All`
   - `Mail.Send`
