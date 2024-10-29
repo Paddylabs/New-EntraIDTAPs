@@ -4,7 +4,8 @@
 
 This PowerShell script is designed to automate the creation and distribution via email of Temporary Access Passes (TAPs) for users specified in a CSV file. TAPs are a time-limited, passcode-based authentication method that allows users to securely access their accounts and enroll other authentication methods, typically used during onboarding or recovery scenarios.
 
-This script allows you to select a start date / time and duration for the TAPs and delivers them to the end users in a responsive HTML email.
+This script allows you to select a start date / time and duration for the TAPs and delivers them to the end users in a responsive HTML email with the details of the TAP
+such as when and how long it is valid for.
 
 ## Prerequisites
 
