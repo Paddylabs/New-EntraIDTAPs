@@ -4,9 +4,11 @@
 
 This PowerShell script is designed to automate the creation and distribution via email of Temporary Access Passes (TAPs) for users specified in a CSV file. TAPs are a time-limited, passcode-based authentication method that allows users to securely access their accounts and enroll other authentication methods, typically used during onboarding or recovery scenarios.
 
+This script allows you to select a start date / time and duration for the TAPs and delivers them to the end users in a responsive HTML email.
+
 ## Prerequisites
 
-- ** An Entra ID App registration with the following Graph API permissions (protected by Certificate Authentication)
+- **An Entra ID App registration with the following Graph API permissions (protected by Certificate Authentication)
   - `UserAuthenticationMethod.ReadWrite.All`
   - `User.Read.All`
   - `Mail.Send`
@@ -26,21 +28,14 @@ This PowerShell script is designed to automate the creation and distribution via
   - `Microsoft.Graph.Identity.SignIns`
   - `Microsoft.PowerShell.ConsoleGuiTools`
   - `Microsoft.Graph.Users.Actions`
-  The script installs any missing modules automatically.
-
-## Required Permissions
-
-The Azure AD app registration must have the following API permissions:
-
-- `UserAuthenticationMethod.ReadWrite.All`
-- `User.Read.All`
-- `Mail.Send`
+The script attempts to install any missing modules automatically.
 
 ## Installation
 
-1. Ensure the `config.ps1` file is located in the same directory as the script.
-2. Install the required PowerShell modules listed above if they aren't automatically installed.
-3. Install the certificate required for authenticating to the Entra ID App.
+1. Ensure you have created and configured an Entra ID App registration with the required Graph API permissions
+2. Ensure the `config.ps1` file is located in the same directory as the script.
+3. Install the required PowerShell modules listed above if they aren't automatically installed.
+4. Install the certificate required for authenticating to the Entra ID App.
 
 ## Usage
 
@@ -53,3 +48,10 @@ The Azure AD app registration must have the following API permissions:
 
 ```powershell
 .\Create-TAPs.ps1
+
+## Further thoughts on Security
+
+The certificate is required on the machine that runs the script but you could further lock this down by using a
+Condiional Access policy to ensure the Entrra ID App can only be accessed from a single IP address or machine.
+
+You could also use an Application Access policy in EOL to ensure the App can only send from one mailbox.
