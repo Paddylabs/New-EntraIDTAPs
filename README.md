@@ -52,9 +52,9 @@ The script attempts to install any missing modules automatically.
 .\Create-TAPs.ps1
 ```
 
-## Further thoughts on Security
+## Further thoughts on security
 
 The certificate is required on the machine that runs the script but you could further lock this down by using a
-Condiional Access policy to ensure the Entra ID App can only be accessed from a single IP address or machine.
+Conditional Access policy to ensure the Entra ID App can only be accessed from a single IP address or machine.
 
 You could also use an Application Access policy in EOL to ensure the App can only send from one mailbox.
