@@ -58,3 +58,7 @@ The certificate is required on the machine that runs the script but you could fu
 Conditional Access policy to ensure the Entra ID App can only be accessed from a single IP address or machine.
 
 You could also use an Application Access policy in EOL to ensure the App can only send from one mailbox.
+
+## Disclaimer
+
+This script and any content is offered "as is" with no warranty. While this script was tested and working in my environment, it is vital that you test it in a test environment before using in your production environment. I am not responsible for any outcome that arises from you using these scripts.
