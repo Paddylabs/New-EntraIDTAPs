@@ -54,6 +54,6 @@ The script attempts to install any missing modules automatically.
 ## Further thoughts on Security
 
 The certificate is required on the machine that runs the script but you could further lock this down by using a
-Condiional Access policy to ensure the Entrra ID App can only be accessed from a single IP address or machine.
+Condiional Access policy to ensure the Entra ID App can only be accessed from a single IP address or machine.
 
 You could also use an Application Access policy in EOL to ensure the App can only send from one mailbox.
