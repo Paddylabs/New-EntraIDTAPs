@@ -28,6 +28,7 @@ This script allows you to select a start date / time and duration for the TAPs a
   - `Microsoft.Graph.Identity.SignIns`
   - `Microsoft.PowerShell.ConsoleGuiTools`
   - `Microsoft.Graph.Users.Actions`
+
 The script attempts to install any missing modules automatically.
 
 ## Installation
